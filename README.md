@@ -103,10 +103,16 @@ Messages are addressed by UID. Every result includes `uidvalidity` so that stale
 ## Development
 
 ```bash
-python3.12 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+python3.12 -m venv .venv && .venv/bin/pip install -r requirements.lock -e ".[dev]"
 docker compose --profile test up -d greenmail   # IMAPS on 127.0.0.1:3993, API on 3980
 .venv/bin/pytest
 .venv/bin/ruff check . && .venv/bin/ruff format --check .
+```
+
+`requirements.lock` pins all runtime dependencies including transitive ones; the Docker image installs from it. Regenerate it after changing `pyproject.toml`:
+
+```bash
+uv pip compile pyproject.toml --python-version 3.12 --no-header -o requirements.lock
 ```
 
 Integration tests run against [GreenMail](https://greenmail-mail-test.github.io/greenmail/). They reset the test server through its API and are skipped if it is not reachable.
