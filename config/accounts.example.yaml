@@ -1,0 +1,22 @@
+# Copy to config/accounts.yaml. Passwords never go into this file; they are read
+# from the environment variable named in password_env.
+accounts:
+  - id: support            # stable key the LLM uses as parameter (a-z, 0-9, _ and -)
+    label: Support mailbox
+    host: imap.example.com
+    port: 993
+    username: support@example.com
+    password_env: MAIL_SUPPORT_PASSWORD
+    mode: readonly         # readonly | readwrite (enables set_flags, move_messages, create_draft)
+    folders_allow: ["INBOX", "Archive/*"]   # optional glob patterns
+    folders_deny: ["Junk", "Trash"]         # optional, always wins over folders_allow
+
+  - id: info
+    label: Info mailbox
+    host: imap.example.org
+    port: 993
+    username: info@example.org
+    password_env: MAIL_INFO_PASSWORD
+    mode: readonly
+    # security: starttls   # only for servers without implicit TLS (port 143); plaintext is not supported
+    # tls_verify: false    # only for test servers with self-signed certificates

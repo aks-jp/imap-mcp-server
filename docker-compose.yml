@@ -1,0 +1,34 @@
+services:
+  imap-mcp:
+    build: .
+    image: imap-mcp:latest
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8770:8000"
+    volumes:
+      - ./config/accounts.yaml:/config/accounts.yaml:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Local IMAP test server, only started with `docker compose --profile test up -d greenmail`.
+  greenmail:
+    profiles: [test]
+    image: greenmail/standalone:2.1.2@sha256:572d22796908375678119a13fabfcdc5416c9003404ab975fe824692fe02ba03
+    environment:
+      GREENMAIL_OPTS: >-
+        -Dgreenmail.setup.test.imaps
+        -Dgreenmail.hostname=0.0.0.0
+        -Dgreenmail.auth.disabled=false
+        -Dgreenmail.users=support:support-secret@example.com,info:info-secret@example.org,writer:writer-secret@example.net
+        -Dgreenmail.verbose=false
+    ports:
+      - "127.0.0.1:3993:3993"
+      - "127.0.0.1:3980:8080"   # GreenMail API, used by the tests to reset the server
